@@ -12,6 +12,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.Rectangle2D;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
@@ -21,6 +22,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
+import javafx.scene.control.TextField;
 import javafx.scene.effect.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -38,8 +40,8 @@ public class Main extends Application {
 		// Setter opp root, grid og scene
 		Group root = new Group();
 		GridPane grid = new GridPane();
-		Scene scene = new Scene(root, 750, 800);
-		//FileChooser for save/load, legger til type imagefiles.
+		Scene scene = new Scene(root, 850, 800);
+		// FileChooser for save/load, legger til type imagefiles.
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Select an image");
 		fileChooser.getExtensionFilters().addAll(new ExtensionFilter("Image Files", "*.png", "*.jpg"));
@@ -48,10 +50,51 @@ public class Main extends Application {
 		grid.setVgap(10);
 		grid.setHgap(5);
 		grid.setPadding(new Insets(20, 20, 20, 20));
-		grid.setGridLinesVisible(true);
+		//Brukes til å sette opp
+		grid.setGridLinesVisible(false);
+
+		//Crop/resize buttons
+		Button cropImage = new Button("Crop image");
+		Button resizeImage = new Button("Resize image");
+		cropImage.setPrefWidth(108.0);
+		resizeImage.setPrefWidth(108.0);
+
+		
+		TextField xValue = new TextField();
+		TextField yValue = new TextField();
+		xValue.setPrefWidth(45);
+		yValue.setPrefWidth(45);
+		Label xLabel = new Label("X");
+		Label yLabel = new Label("Y");
+		
+		TextField resizeValue = new TextField("100");
+		resizeValue.setPrefWidth(45);
+		Label reLabel = new Label("%");
+
+		
+		HBox XY = new HBox();
+		XY.getChildren().addAll(xLabel, xValue, yLabel, yValue);
+		XY.setSpacing(5);
+		HBox resize = new HBox();
+		resize.getChildren().addAll(resizeValue, reLabel);
+		resize.setSpacing(5);
+		resize.setPadding(new Insets(0,0,0,14));
+		
+
+
+		VBox upperRight = new VBox();
+		upperRight.getChildren().add(cropImage);
+		upperRight.getChildren().add(XY);
+		upperRight.getChildren().add(resizeImage);
+		upperRight.getChildren().add(resize);
+		upperRight.setSpacing(10);
+
 		// Lager save/load knapper
 		Button loadImage = new Button("Load image");
 		Button saveImage = new Button("Save image");
+		loadImage.setPrefWidth(108.0);
+		saveImage.setPrefWidth(108.0);
+
 
 		// Legger knappene i en verticalbox + mellomrom mellom knappene
 		VBox buttons = new VBox();
@@ -96,7 +139,6 @@ public class Main extends Application {
 		ImageView image = new ImageView(img);
 		image.setFitWidth(600);
 		image.setPreserveRatio(true);
-		image.setId("1");
 
 		// Henter bredden og høyden til det resizede imaget.
 		int boundWidth = (int) image.getBoundsInParent().getWidth();
@@ -107,6 +149,7 @@ public class Main extends Application {
 		box.getChildren().add(image);
 		// legger v/hbox inn i grid.
 		grid.add(box, 0, 0);
+		grid.add(upperRight, 1, 0);
 		grid.add(sliders, 0, 1);
 		grid.add(buttons, 1, 1);
 		// Oppretteer scenen.
@@ -160,15 +203,16 @@ public class Main extends Application {
 			image.setImage(img2);
 
 		});
-		//Save image listener,  oppretter et writable image wim med bredden og høyden lik image, deretter snapshooter vi image og sender til wim
-		//Deretter har vi selve lagringen, med evt feilmelding i catch.
+		// Save image listener, oppretter et writable image wim med bredden og
+		// høyden lik image, deretter snapshooter vi image og sender til wim
+		// Deretter har vi selve lagringen, med evt feilmelding i catch.
 		saveImage.setOnAction((event) -> {
 			{
 
 				System.out.println(image.getId());
 				fileChooser.setTitle("Save as");
 				File fileS = fileChooser.showSaveDialog(primaryStage);
-				WritableImage wim = new WritableImage(boundWidth, boundHeight);
+				WritableImage wim = new WritableImage((boundWidth*Integer.parseInt(resizeValue.getText()))/100, (boundHeight*Integer.parseInt(resizeValue.getText())/100));
 				image.snapshot(null, wim);
 				if (fileS != null) {
 					try {
@@ -179,10 +223,24 @@ public class Main extends Application {
 				}
 			}
 		});
+		
+		//Listener for resize. MANGLER varsel for annet enn tall i textfield, varsel hvis tallet er for stort.
+		resizeImage.setOnAction((event) -> {
+			int resizingValue = Integer.parseInt(resizeValue.getText());
+			image.setFitWidth((resizingValue*boundWidth)/100);
+			image.setPreserveRatio(true);
+		});
+		
+		//Fungerer dårlig atm, usikker på om det fins noen bedre måte.
+		cropImage.setOnAction((event) -> {
+			image.setViewport(new Rectangle2D(0,0,Integer.parseInt(xValue.getText()), Integer.parseInt(yValue.getText())));
+		});
+
 	}
 
 	public static void main(String[] args) {
 		launch(args);
+		
 	}
 
 }
