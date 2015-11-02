@@ -29,8 +29,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 
 public class Main extends Application {
@@ -41,6 +43,7 @@ public class Main extends Application {
 		Group root = new Group();
 		GridPane grid = new GridPane();
 		Scene scene = new Scene(root, 850, 800);
+		Rectangle background = new Rectangle(600,600, 	Color.WHITE);
 		// FileChooser for save/load, legger til type imagefiles.
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Select an image");
@@ -145,10 +148,11 @@ public class Main extends Application {
 		int boundHeight = (int) image.getBoundsInParent().getHeight();
 
 		// Legger image i en hbox
-		HBox box = new HBox();
-		box.getChildren().add(image);
+		StackPane imageBox = new StackPane();
+		imageBox.getChildren().addAll(background, image);
+		//box.getChildren().add(image);
 		// legger v/hbox inn i grid.
-		grid.add(box, 0, 0);
+		grid.add(imageBox, 0, 0);
 		grid.add(upperRight, 1, 0);
 		grid.add(sliders, 0, 1);
 		grid.add(buttons, 1, 1);
