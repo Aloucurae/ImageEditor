@@ -27,6 +27,7 @@ import javafx.scene.effect.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -44,6 +45,9 @@ public class Main extends Application {
 		GridPane grid = new GridPane();
 		Scene scene = new Scene(root, 850, 800);
 		Rectangle background = new Rectangle(600,600, 	Color.WHITE);
+		
+		double[] resizingValues = new double[4];
+		
 		// FileChooser for save/load, legger til type imagefiles.
 		FileChooser fileChooser = new FileChooser();
 		fileChooser.setTitle("Select an image");
@@ -140,7 +144,7 @@ public class Main extends Application {
 		File file = fileChooser.showOpenDialog(primaryStage);
 		Image img = new Image(file.toURI().toString());
 		ImageView image = new ImageView(img);
-		image.setFitWidth(600);
+		image.prefWidth(600);
 		image.setPreserveRatio(true);
 
 		// Henter bredden og høyden til det resizede imaget.
@@ -205,6 +209,7 @@ public class Main extends Application {
 			File fileL = fileChooser.showOpenDialog(primaryStage);
 			Image img2 = new Image(fileL.toURI().toString());
 			image.setImage(img2);
+			image.setViewport(null);
 
 		});
 		// Save image listener, oppretter et writable image wim med bredden og
@@ -233,13 +238,40 @@ public class Main extends Application {
 			int resizingValue = Integer.parseInt(resizeValue.getText());
 			image.setFitWidth((resizingValue*boundWidth)/100);
 			image.setPreserveRatio(true);
+			
+
 		});
 		
 		//Fungerer dårlig atm, usikker på om det fins noen bedre måte.
 		cropImage.setOnAction((event) -> {
-			image.setViewport(new Rectangle2D(0,0,Integer.parseInt(xValue.getText()), Integer.parseInt(yValue.getText())));
+			image.setViewport(new Rectangle2D(resizingValues[0],resizingValues[1],resizingValues[2]-resizingValues[0],resizingValues[3]-resizingValues[1]));
+		
 		});
+	
+		
+		image.setOnMousePressed((event)->{
+			if(event.isAltDown() == true){
+				
+				resizingValues[0] = event.getX();
+				resizingValues[1] = event.getY();
 
+			
+			}
+			else if (event.isControlDown() == true){
+				resizingValues[2] = event.getX();
+				resizingValues[3] = event.getY();
+				System.out.println(resizingValues[0]);
+				System.out.println(resizingValues[1]);
+				System.out.println(resizingValues[2]);
+				System.out.println(resizingValues[3]);
+
+
+			}
+			
+
+			
+			
+		});
 	}
 
 	public static void main(String[] args) {
